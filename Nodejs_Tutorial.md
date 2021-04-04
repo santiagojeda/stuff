@@ -232,9 +232,89 @@ http.createServer(function(req,res){
 
 Al correr el código el cursor se queda esperando, así que debemos ir al explorador y poner: localhost:3000 que quiere decir que estamos escuchando un servidor que está en este mismo computador. Si se quiere iniciar el servidor de nuevo y ver cambios debe cancelarse la opción anterior y volverse a correr. 
 
-Ahora vamos a incluir, dentro de create.Server() un head utilizando writeHead(), especificando el tipo de respuesta. 
+Ahora vamos a incluir, dentro de create.Server() un head utilizando writeHead(), especificando el tipo de respuesta. 200 significa petición correcta. Queda de la siguiente forma:
+
+http.createServer(function(req,res){
+    res.writeHead(200, {'Content-type':'text/html'});
+    res.write('<h1>Hola Mundo!!</h1>') // Te voy a responder con una línea de html
+    res.end(); //Termina la respuesta para poder seguir haciendo peticiones.  
+}).listen(3000); //Decirle en qué puerto va a escuchar mi servidor. Esto es lo que lo muestra.
 
 
+Al actualizar el navegador, vamos a herramientas de desarrolladores, network, vovlemos a actualizar y aparecen las dos peticiones. La primera es el 200 y la segunda, el favicon, será lo que escribimos en el objeto de Content-type
+
+Podemos guardar todas estas funciones en una constante llamada handle Server así:
+
+const handleServer = function(req,res){
+    res.writeHead(200, {'Content-type':'text/html'});
+    res.write('<h1>Hola Mundo!!</h1>') // Te voy a responder con una línea de html
+    res.end(); //Termina la respuesta para poder seguir haciendo peticiones.  
+}
+
+también  el http.createServer() se puede guardar en una constante, porque el método retorna una constante llamada server así:
+
+const handleServer = function(req,res){
+    res.writeHead(200, {'Content-type':'text/html'});
+    res.write('<h1>Hola Mundo!!</h1>') // Te voy a responder con una línea de html
+    res.end(); //Termina la respuesta para poder seguir haciendo peticiones.  
+}
+
+
+const server = http.createServer(handleServer);
+
+Ahora vamos a aprender de packages o frameworks de node, para eso debemos saber sobre npm, node packasge manager. Estos package se pueden encontrar en **npmjs.com**
+
+Vamos a utilizar el package colors de npm.
+
+Para instalarlo vamos a la consola ubicada en la carpeta que estamos utilizando y ponemos: 
+
+npm install colors
+
+En la carpeta aparecerá node_modules y un archivo llamado package-lock.json 
+
+node_modules es para los módulos dentro del proyecto, en este caso el módulo llamado colors y el package-lock.json registra qué paquete se ha instalado y de qué página se ha instalado.
+
+Para invocar a colors usamos, en nuestro archivo:
+
+const colors = require('colors'); Agregando módulos.
+
+Cuando hagamos servidores con nodejs necesitaremos una cantidad de módulos. Para empezar a escribir la aplicación desde otro computador o correrla desde otro computador necesitamos una lista de todos los modulos para poderlos instalar. Esta lista la hacemos a travez de un comando de nodejs o de npm en realidad, llamado **init**
+
+Va a comenzar a pedir información del proyecto para crear un package.json file.
+
+Al terminar crea un package.json, que es un archivo de meta información.
+
+En el package.json está el comando start, ahí podríamos decirle que al poner npm start, por ejemplo, ejecute index.js cambiándolo así:
+ 
+  "scripts": {
+    "start":"node index.js"
+  }
+  
+  Si queremos ejecutar un comando que npm no conoce, por ejemplo desarrollo, debemos hacer:
+  
+  npm run desarrollo
+  
+  Package json tiene la responsabilidad de guardar todos nuestros módulos y de guardar más comandos. 
+
+
+**Express es un módulo necesario para crear servidores!!!!!!**
+
+Para instalarlo en la carpeta del proyecto: 
+
+npm install express --save
+
+En un nuevo index5.js escribiremos:
+
+const express = require('express'); // Llama express
+
+
+const server= express(); // crea el servidor
+
+server.listen(3000, function(){ //escuche en el puerto 3000
+    console.log("Server on port 3000") // cuando escuche escriba
+});
+
+INSTALAR LOS MÓDULOS Y DESPUES REQUIRE
 
 
 
