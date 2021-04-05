@@ -305,6 +305,234 @@ Dentro de nuestra carpeta, creamos una nueva carpeta llamada views.
 
 **__dirname --> muestra la dirección del archivo actual**
 
-app.set('views',__dirname + '/views')****
-**Es la dirección de la carpeta views asignada a la variable 'views'**
-****
+app.set('views',__dirname + '/views')Es la dirección de la carpeta views asignada a la variable 'views'__
+
+nos queda:
+
+app.set('views',__dirname + '/views');__
+
+Esto amplia las carpetas de donde puedo escojer.... 
+
+Ahora creamos un **index.ejs dentro de la carpeta views**
+
+Este va a ser un documento con el formato de HTML, puede verse así:
+
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+  <head>
+    <meta charset="utf-8">
+    <title>MI PRIMER SERVER</title>
+  </head>
+  <body>
+    <h1>HOLA CON EXPRESS Y EJS</h1>
+  </body>
+</html>
+
+Para mostrar esto volvemos a nuestro documento index.js y vamos a la función que responde a las peticiones: app.get(/) (cuando recibe un get en el home).
+
+Debería quedar así.
+
+**node y express no sabes nada de ejs así que toca instalarlo con el siguiente comando:**
+ 
+npm install ejs
+
+Debería aparecer en el json.
+
+**EJS es uno de los POCOS MÓDULOS QUE NO TOCA REQUERIR**
+
+¿Por qué ejs y no HTML? Por lo visto express permite hacer cosas con HTML.... EJS permite la reutilizacion de código....
+
+Vamos a crearle una navegación a los views así:
+
+Creamos una carpeta en views ue se llamará partials. A partials le vamos a crear una nacegación, un archivo ejs llamado navigation.ejs
+
+En ese archivo solo escribiremos navegación de inicio y de login:
+
+<nav>
+  <ul>
+    <li>Inicio</li>
+    <li>Login</li>
+  </ul>
+</nav>
+
+Esto lo vamos a insetar en nuestro index de ejs utilizando **notación de ejs**
+
+<%- include('partials/navigation.ejs') %>
+
+Le agregamos los links a la navegación y queda así:
+
+<nav>
+  <ul>
+    <li><a href="/">Inicio</a></li>
+    <li><a href="/login">Login</a></li>
+  </ul>
+</nav>
+
+Pero en la página de login no hay forma de devolverse, así que cambiamos la función que responde a login. app.get() de login.
+
+Queda así:
+app.get('/login',(req,res) => { // cuando recibamos una petición get, recibiremos un objeto req y respondemos un objeto res
+  res.render('login.ejs');
+})
+
+Creamos el archivo dentro de views: login.ejs
+
+En login.ejs creamos un formulario, y un h1 que diga login debería quedar así:
+
+**Un API puede tener sub APIs**
+
+Vamos a subdividir las aplicaciones a través de un módulo llamado router o enrutador.
+
+Vamos a cortar (en este caso comentar) todas las rutas.... de index.js y pegarlo en un nuevo documento routes.js que se encuentra en la carpeta principal junto a index.js
+
+Para comunicarnos con el otro archivo vamos a requerir express.
+
+Vamos a requerir una función de express llamada Router.
+
+Cambiamos el app, que es la función que inicializaba el servidor, por Router. 
+
+Router es un objeto que estamos exportando así que debemos poner module.exports = router; al final
+
+Debería quedar así:
+
+const express = require('express');
+const router = express.Router();
+
+router.get('/',(req,res) => { // cuando recibamos una petición get, recibiremos un objeto req y respondemos un objeto res
+  res.render('index.ejs');
+})
+
+router.get('/login',(req,res) => { // cuando recibamos una petición get, recibiremos un objeto req y respondemos un objeto res
+  res.render('login.ejs');
+})
+
+router.get('*',(req,res) => { // cuando recibamos una petición get, recibiremos un objeto req y respondemos un objeto res
+  res.end('Archivo no encontrado');
+})
+
+module.exports = router;
+
+Para enlazarlo con index.js escribimos:
+
+require('./routes.js') Requiere el archivo routes que está en la dirección en la que está este archivo. 
+
+Creamos una constante que son las rutas: 
+
+const routes = require('./routes.js')
+
+y utilizamos la función abajo asi:
+
+app.use(routes);
+
+const express= require('express');
+const morgan = require('morgan');
+const app= express();
+//Requiriendo rutas
+
+const routes = require('./routes.js')
+
+//Settings
+app.set('appName','Mi primer server');
+app.set('views',__dirname + '/views'); // ampliando las carpetas que puedo coger....
+app.set('view engine','ejs');
+
+
+//Middlewares
+//Use es un middleware
+app.use(morgan('dev'));
+/* app.use(function (req, res, next){
+  console.log('request url:' + req.url); //Imprima request url: y el url que se le está pidiendo al servidor a través de una peticiónti
+  next();
+});*/
+
+/* app.use((req,res,next) => {
+  console.log('ha pasado por esta funcion');
+  next();
+} );
+
+//Router
+
+app.use(routes);
+
+app.listen(3000, () => {
+  console.log('Servidor funcionando!');
+  console.log('Nombre de la app: ',app.get('appName')); //Imprima el 'Nombre de la app' y concaténelo con el valor de appName.
+});
+
+**Esto mismo se puede hacer con un API**
+
+Creamos un archivo llamado routes-api.js en la carpeta principal
+
+Agregamos express, agregamos la constante de Router....
+
+const express = require('express');
+const router = express.Router();
+
+Hacemos una función para que cuando le pidan '/' (La ruta inicial a esta ruta) responda un json (Siempre usando module.exports = router;) así:
+
+const express = require('express');
+const router = express.Router();
+
+router.get('/', (req,res) => {
+res.json({
+  miprimerApi: 'Work!'
+});
+
+});
+
+module.exports = router;
+
+Para conectar con indes.js agregamos una constate para este router.... Quedarían las constantes así:
+
+const routes = require('./routes.js');
+const routesApi = require('./routes-api.js');
+
+Las rutas quedarían así:
+
+//Requiriendo rutas
+
+const routes = require('./routes.js');  (Ya la teníamos, era la del router anterior)
+const routesApi = require('./routesApi.js'); (La que acabamos de agregar)
+
+Y usamos el app.use(routesApi)  
+
+En las rutas abajo....
+
+app.use('/api',routesApi); //Cuando recibamos una petición get /api use routes API
+
+Las rutas deberían quedar así:
+
+//Router
+
+app.use(routes);
+app.use('/api',routesApi); //Cuando recibamos una petición get /api use routes API
+app.get('*',(req,res) => { // cuando recibamos una petición get, recibiremos un objeto req y respondemos un objeto res
+  res.end('Archivo no encontrado');
+}) 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ 
+ 
+
+
+
