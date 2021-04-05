@@ -252,4 +252,59 @@ Mucha gente ha creado middlewares para express, solo deben ser instalados para u
 
 Middlewares tratan rutas u objetos que reciben del navegador. 
 
+**Usando el módulo Morgan**
 
+Es un registrador de peticiones de http.
+
+Vamos a la consola y ponemos: npm install morgan.
+
+Completamos el requerimiento en index.js así:
+
+const morgan = require('morgan');
+
+Se escribe: 
+app.use(morgan('dev'));
+
+Que imprime en consola algo como esto: 
+GET / 200 1.117 ms - -
+
+Claramente es un registrador de peticiones. 
+
+Los middlewares de express se pueden buscar como _express middlewares_ en npmjs.org
+
+**Configuraciones o settings para el servidor express**
+
+Delimitamos con comentario la sesión settings....
+
+Funciones para ** agregar variables**
+
+Se crea una variable appName con 'Mi primer servidor' utilizando la función app.set, son funciones de express.
+
+app.set('appName','Mi primer server');
+
+y al final, en la misma función que imprime: 'Servidor funcionando' en consola, le decimos:
+
+console.log('Nombre de la app',app.get('appName')); //Imprima el 'Nombre de la app' y concaténelo con el valor de appName. 
+
+**Templates o plantillas**
+
+HTMLS que se pueden re utilizar. 
+
+Para reutilizar estás configuraciones en HTML utilizamos motores de plantillas como EJS, ERB, JInja2, Razor, Jade, Pug....
+
+Más conocidos: **EJS, Jade, Pug**
+
+EJS es como HTML pero con bucles y condicionales, etc... Le agregan funcionalidad de lenguaje de programación a nuestro HTML. 
+Express no tiene ningún motor de plantilla pre instalado así que uno puede instalar el que quiera. 
+
+Para configurar el motor de plantilla vamos a utilizar la función app.set
+
+app.set('view engine','ejs');
+
+Dentro de nuestra carpeta, creamos una nueva carpeta llamada views.
+
+**__dirname --> muestra la dirección del archivo actual**
+
+app.set('views',__dirname + '/views')****
+**Es la dirección de la carpeta views asignada a la variable 'views'**
+****
