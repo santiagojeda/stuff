@@ -152,7 +152,90 @@ sudo -u postgres psql
 
 -u es para el usuario de postgres
 psql es para iniciar el shell de postgres
-sudo es para volverse el superusuario de postgres
+sudo es para volverse el superusuario de postgres.
+
+Sin embargo en nuestro caso utilizamos: porque postgres corre en deamon mode...
+
+**psql postgres**
+
+Hacemos el comando:
+
+CREATE DATABASE typescriptdatabase;
+
+Vamos a ir escribiendo todos los comandos de postgres en un documento llamado database.sql que va a estar dentro de una carpeta llamada database, que está en la carpeta principal.
+
+Después creamos una tabla así:
+
+\c typescript database;
+
+para entrar la base de datos que he creado 
+
+CREATE TABLE users(
+    id SERIAL PRIMARY KEY,  
+    name VARCHAR(40),
+    email TEXT 
+);
+Crea la tabla users, la columna id que es na serie de enteros y va a ser la primary key, otra columna llamada name que va a ser strings de máximo 40 y una columna e-mail de string sin limite.
+
+Después agregamos datos así:
+
+INSERT INTO users (name,email)
+    VALUES ('joe','joe@ibm.com'),
+            ('ryan','ryan@faztweb.com');
+
+\dt para display tables
+\d users para mostrar una table, en este caso users
+
+select * from users nos muestra toda la tabla users
+
+Para agregar el dumbfile de arca, se creó una nueva base de datos usando:
+
+CREATE DATABASE databasename
+
+Y se agregó el dumb usando:
+
+\i 'path/to/file.sql'
+
+Para conectarnos a postgres creamos un archivo dentro de la carpeta scr llamado database.ts:
+
+Escribimos, para conectar con postgres:
+
+import {  } from "pg";
+
+Dice que no reconoce pg, entonces vamos a la primera consola y escribimos, para instalar los tipos de datos de pg:
+
+npm i @types/pg -D
+
+Para instalarlos solamente en modo desarrollo
+
+Una vez tengo el módulo, lo que voy a importar desde allí es una clase llamada Pool para poder tener una serie de conexiones para usarlas desde node. Queda así:
+
+import {Pool} from "pg";
+
+
+Abajo, usamos la función pool para caracterizar el acceso a postgres así:
+
+new Pool ({
+user: 'santiagojeda',
+host: 'localhost',
+password: '271293So',
+database: 'typescriptdatabase',
+port: 5432,
+});
+
+
+
+
+
+
+
+
+
+
+
+
+          
+
 6. 
 7. 
 
