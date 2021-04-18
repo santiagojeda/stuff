@@ -449,7 +449,72 @@ Ahora al probarlo desde insomnia debería responder:
   }
 }
 
+Deberíamos poder ver en postgres que se creó un nuevo usuario usando el comando: select * from users;
+
 Ahora para actualizar y eliminar....
+
+Comenzaremos por Eliminar, que es muy sencillo, solamente debemos confirmar si recibimos el id...
+
+Descomentamos el delete user tanto en controllers como en index de routes, lo importamos en routes y comenzamos a escrivir dentro de la función en controllers:
+
+export const deleteUser = (req:Request, res:Response): Promise<Response> => {
+    console.log(req.params.id)
+    res.send('Deleting');
+} 
+	
+Si recibe el id devuelve deleting...
+
+Al mandar la petición delete a /users/1 debería mostrar deleting y aparece 1 en consola....
+
+export const deleteUser = async (req:Request, res:Response): Promise<Response> => {
+    const id = parseInt(req.params.id);
+    await pool.query('DELETE FROM users WHERE id= $1', [id]); //no tengo que gurdarla en constante
+    return res.json(`User ${id} deleted successfully`); //Concatenación javascript
+} 
+	
+Debería verse en consola y hacer el get users que se eliminó el usuario 1
+
+Ahora, por útimo, para actualizar.... Descomentamos en routes y en la importada... updateUser
+
+Quedan así:
+import {getUserbyId, getUsers, createUser,deleteUser,updateUser} from '../controllers/index.controller'
+
+router.get('/users', getUsers);
+router.get('/users/:id', getUserbyId); 
+router.post('/users', createUser);
+router.put('/users/:id', updateUser);
+router.delete('/users/:id', deleteUser);
+
+Escribo la función así, necesitando 3 cosas.... id, name y email (Estos dos los saco de body de la petición)
+
+export const updateUser = async (req:Request, res:Response): Promise<Response> => {
+    const id =parseInt(req.params.id);
+    const{name, email} = req.body;
+    await pool.query('UPDATE users SET name $1, email $2 WHERE id =$3',[name, email,id]);
+
+    return res.json(`User ${id} updated successfully`)
+}
+
+Necesito el req.params.id para saber cuál quiero actualizar y el req.body los nuevos datos para actualizar.
+
+Hago la petición en la ruta que quiero actualizar...
+
+Ahora para convertir el código simplemente cierro todas las ventanas, cancelo la consola y pongo:
+
+npm run build
+
+Podría poner:
+
+node dist/index.js
+
+Y activa el servidor para seguir consultando
+
+
+
+
+
+
+
 
 
  
