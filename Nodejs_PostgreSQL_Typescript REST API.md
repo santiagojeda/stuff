@@ -213,15 +213,253 @@ Una vez tengo el módulo, lo que voy a importar desde allí es una clase llamada
 import {Pool} from "pg";
 
 
-Abajo, usamos la función pool para caracterizar el acceso a postgres así:
+Abajo, usamos la función pool para caracterizar el acceso a postgres así: (se exporta como una constante)
 
-new Pool ({
+export const pool = new Pool ({
 user: 'santiagojeda',
 host: 'localhost',
 password: '271293So',
 database: 'typescriptdatabase',
 port: 5432,
 });
+
+5432 es el puerto por default, se consulta haciendo
+
+\conninfo
+
+En la consola de postgres
+
+Este será un objeto que permite hacer consultas en la base de datos.
+
+Ya puedo hacer consultas. Ahora voy a index.ts para hacer unas cuantas rutas, urls para el servidor. 
+
+En src crearé una carpeta llamada routes y dentro de routes un index.ts también, pero en otra locación. 
+
+En este index.ts importamos el router desde express:
+
+import {Router} from 'express'
+
+ejecuto la función, que nos devuelve un objeto que va a ser guardado en una constante:
+
+const router = Router();
+
+Y exportamos para que pueda ser utilizado desde otros archivos:
+
+Defino qué pasa cuando mandan una petición get a la dirección /test:
+
+router.get('/test', (req,res) => res.send('Hello World'))
+
+Ahora vamos a probar el router, vamos a index.ts del src e importamos desde la carpeta routes el archivo index, así:
+
+import indexRoutes from './routes/index'
+
+Y para utilizarlo:
+
+app.use(indexRoutes);
+
+Ahora volvemos a correr: 
+
+npm run dev
+
+Ahora ya tenemos el enrutador
+
+Antes de las rutas, debo ejecutar unos cuantos middlewares que me permitan, por ejemplo, leer archivos json:
+
+Por lo tanto, antes de las rutas, ejecuto:
+
+//Middlewares
+
+app.use(express.json()); // para convertir las cosas a json (Desde Rest API)
+
+app.use(express.urlencoded({extended: false})); //si le mandamos datos desde un formuario, puede convertirlos a json. (HTML)
+
+Queremos utilizar estas confguraciones en las rutas.
+
+Vamos a ir a index de routes para quitar el ''hello world'' y definir las rutas.
+
+Vamos a definir el res.send en un archivo por aparte. Entonces vamos a cambiar lo del helloworld por:
+
+
+Dentro de src hago una carpeta que se llama controllers y dentro de controllers hago un archivo que se llama index.controllers
+
+En el nuevo archivo escribo:
+
+import {Request,Response} from 'express'   // importando de express las interfaces de request y response
+
+export const getUser = (req: Request,res: Response) =>{
+    res.send('users')
+}
+
+Y ahora desde index de routes voy a importar los controladores
+
+Pongo:
+
+import {getUser} from '../controllers/index.controller'  // carpeta está subiendo un nivel porque estoy en routes.
+
+Guardamos para que se reinicie el servidor y ahora al poner en el explorador: http://localhost:4000/users vemos la palabra users.
+
+En index de routes vamos a copiar el: router.get('/users', getUsers); varias veces
+
+router.get('/users/:id', getUsers); //Para cuando queramos un id específico....
+
+router.post('/users', getUsers); //Para agregar usuarios....
+
+router.put('/users', getUsers); //Para actualizar
+
+router.delete('/users/id:', getUsers); //Para eliminar un usuario
+
+Ahora, cómo conectar con la base de datos? 
+
+Voy a index.controllers e importo todas las instrucciones de conexión a la base de datos....
+
+Ponemos:
+import {pool} from '../database'
+
+export const getUsers = async (req: Request,res: Response) =>{
+    await pool.query('SELECT * FROM users'); //Esto es una petición asíncrona (por esto el await) para mostrar el contenido como antes en "Consola" pero ahora como un arreglo....
+    res.send('users')
+}
+
+Finalmente Queda: (Agregando Query Result tras importarlo)
+
+import {Request,Response} from 'express'
+import {QueryResult} from 'pg'
+
+
+import {pool} from '../database'
+
+export const getUsers = async (req: Request,res: Response) =>{
+    const response: QueryResult = await pool.query('SELECT * FROM users'); 
+    res.send('users')
+}
+
+Al hacer la petición a http://localhost:4000/users
+
+Veremos en consola el arreglo con dos objetos
+
+
+Ya no quiero ver eso por consola, quiero verlo en el explorador al hacer la petición. Así que voy a cambiar las cosas un poco:
+
+Para que eso salga en el explorador entonces hago...
+
+export const getUsers = async (req: Request,res: Response) =>{
+    const response: QueryResult = await pool.query('SELECT * FROM users'); 
+    res.status(200).json(response.rows);
+}
+
+Vuelvo a hacer la petición a: http://localhost:4000/users y veo el arreglo con dos objetos.
+
+Para hacer más descriptivo el código anterior, trabajaremos con promise y return así:
+
+export const getUsers = async (req: Request,res: Response): Promise <Response> =>{ // Esta función retorna una respuesta basada en una promesa, es decir que la retorna una vez acabe una petición asíncrona....
+    const response: QueryResult = await pool.query('SELECT * FROM users'); 
+    return res.status(200).json(response.rows);
+}
+Ponemos todo en un try catch así:
+ 
+ export const getUsers = async (req: Request,res: Response): Promise <Response> =>{
+    try{
+        const response: QueryResult = await pool.query('SELECT * FROM users');
+        return res.status(200).json(response.rows); 
+    }
+    catch(e) {
+        console.log(e)
+        return res.status(500).json('Internal Server Error')
+    }
+    
+}
+ 
+ 
+Seguimos agregando funciones, por ejemplo en Get users by id: (Debo actualizar todo también en el index de router para que importe y use las nuevas funciones)
+
+export const getUserbyId = (req:Request, res:Response): Promise<Response> => {
+console.log(req.params.id)  //req.params.id es el id que yo le ponga en el url
+res.send('received')
+}
+
+Ahora, para mostrarlo en el explorador al hacer la petición:
+
+export const getUserbyId = async (req:Request, res:Response): Promise<Response> => {
+const id = parseInt(req.params.id)
+const response: QueryResult = await pool.query('SELECT * FROM users WHERE id= $1', [id]);
+return res.json(response.rows);
+}
+ 
+Siguiendo con la función de crear usuario.... comenzamos escribiendo en index.controllers:
+
+export const createUser = async (req:Request, res:Response): Promise<Response> => {
+   console.log(req.body) 
+    res.send('received')
+}
+ 
+pero el req.body es la info que va a estar enviado las aplicaciones cliente. Para hacer un request necesitaríamos una aplicación movil, una aplicaciónde javascript o un formulario html, obviamente eso lleva tiempo entonces.
+ 
+Para probar el rest api bajamos imsomnia buscando en google: insomnia rest
+
+En insomnia creamos una petición llamada Typescript postgres y escribimos:
+
+http://localhost:4000/users
+
+Debería mostrar el contenido de la tabla....
+
+Ahora intentamos hacer una peticion post, que es la del createUser:
+
+Ahí podemos enviarle datos, por ejemplo un json así:
+
+{
+	"hello": "hello world"
+}
+
+Deberia devolver receeived ....
+
+Y por consola mostrar el objeto que le he enviado.
+
+Al ver que sí funciona vamos a cambiar un poco createUser
+
+Hago esto:
+
+export const createUser = async (req:Request, res:Response): Promise<Response> => {
+   const{name, email} = req.body; //guardo en cosntante el nombre y el email del body que recibo....
+   console.log(name,email)
+    res.send('received')
+}
+Al enviarle,  por ejemplo, un json: 
+ {
+	"name": "John",
+	"email":"john@gmail.com"
+}
+ 
+Debería poner received y recibir por consola.
+ 
+export const createUser = async (req:Request, res:Response): Promise<Response> => {
+   const{name, email} = req.body;
+   pool.query('INSERT INTO users (name, email) VALUES($1,$2)',[name,email]) //inserto el primer y segundo parámetro que son name y email
+    res.send('received')
+}
+ 
+Ahora al probarlo desde insomnia debería responder:
+
+{
+  "message": "User created successfully",
+  "body": {
+    "user": {
+      "name": "John",
+      "email": "john@gmail.com"
+    }
+  }
+}
+
+Ahora para actualizar y eliminar....
+
+
+ 
+ 
+
+
+
+
+
+
 
 
 
